@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>ciapciap.pl</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background: #ff69b4;
+            color: white;
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 2em;
+        }
+        .container {
+            margin-top: 50px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        input[type="text"], input[type="password"] {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #ff69b4;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        #error {
+            margin-top: 20px;
+            color: red;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>ciapciap.pl</header>
+
+    <div class="container">
+        <h2>Logowanie</h2>
+        <input type="text" id="login-username" placeholder="Login">
+        <input type="password" id="login-password" placeholder="Hasło">
+        <button onclick="login()">Zaloguj</button>
+
+        <h2>Rejestracja</h2>
+        <input type="text" id="register-username" placeholder="Nowy login">
+        <input type="password" id="register-password" placeholder="Nowe hasło">
+        <button onclick="register()">Zarejestruj</button>
+
+        <div id="error">Błąd: niepoprawny login lub hasło!</div>
+    </div>
+
+    <script>
+        // Obsługa Entera dla logowania
+        document.getElementById('login-password').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') login();
+        });
+        document.getElementById('login-username').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') login();
+        });
+
+        // Obsługa Entera dla rejestracji
+        document.getElementById('register-password').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') register();
+        });
+        document.getElementById('register-username').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') register();
+        });
+
+        function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            if (username && password) {
+                localStorage.setItem('user_' + username, password);
+                alert('Zarejestrowano pomyślnie!');
+            } else {
+                alert('Wprowadź login i hasło!');
+            }
+        }
+
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            const savedPassword = localStorage.getItem('user_' + username);
+
+            if (savedPassword === password) {
+                window.location.href = 'blad.html';
+            } else {
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+    </script>
+
+</body>
+</html>
