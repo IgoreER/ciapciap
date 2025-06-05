@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Kółko i krzyżyk</title>
+    <style>
+        body {
+            background-color: #f9f9f9;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        h1 {
+            color: #ff69b4;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            font-size: 2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #ccc;
+            cursor: pointer;
+        }
+        .controls {
+            margin-top: 30px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 1em;
+            border: none;
+            background-color: #ff69b4;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <h1>⭕❌ Kółko i krzyżyk</h1>
+
+    <div class="controls">
+        <button onclick="startGame('friend')">Gracz vs Gracz</button>
+        <button onclick="startGame('easy')">Gracz vs AI (proste)</button>
+        <button onclick="startGame('hard')">Gracz vs AI (trudne)</button>
+    </div>
+
+    <div class="board" id="board"></div>
+    <div id="status"></div>
+
+    <script>
+        let board = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let gameMode = 'friend';
+        let isGameOver = false;
+
+        function startGame(mode) {
+            board = Array(9).fill(null);
+            currentPlayer = 'X';
+            gameMode = mode;
+            isGameOver = false;
+            render();
+            document.getElementById('status').textContent = `Tura gracza: ${currentPlayer}`;
+        }
+
+        function render() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+            board.forEach((cell, i) => {
+                const cellEl = document.createElement('div');
+                cellEl.className = 'cell';
+                cellEl.textContent = cell || '';
+                cellEl.onclick = () => handleMove(i);
+                boardEl.appendChild(cellEl);
+            });
+        }
+
+        function handleMove(i) {
+            if (board[i] || isGameOver) return;
+            board[i] = currentPlayer;
+            render();
+
+            if (checkWinner()) {
+                document.getElementById('status').textContent = `Wygrał ${currentPlayer}!`;
+                isGameOver = true;
+                return;
+            }
+
+            if (!board.includes(null)) {
+                document.getElementById('status').textContent = 'Remis!';
+                isGameOver = true;
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            document.getElementById('status').textContent = `Tura gracza: ${currentPlayer}`;
+
+            if ((gameMode === 'easy' || gameMode === 'hard') && currentPlayer === 'O') {
+                setTimeout(() => aiMove(), 500);
+            }
+        }
+
+        function aiMove() {
+            let move;
+            if (gameMode === 'easy') {
+                const emptyIndices = board.map((v, i) => v === null ? i : null).filter(i => i !== null);
+                move = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+            } else {
+                move = minimax(board, 'O').index;
+            }
+            handleMove(move);
+        }
+
+        function checkWinner() {
+            const winCombinations = [
+                [0,1,2], [3,4,5], [6,7,8],
+                [0,3,6], [1,4,7], [2,5,8],
+                [0,4,8], [2,4,6]
+            ];
+            return winCombinations.some(combo =>
+                board[combo[0]] && board[combo[0]] === board[combo[1]] && board[combo[1]] === board[combo[2]]
+            );
+        }
+
+        function minimax(newBoard, player) {
+            const availSpots = newBoard.map((v, i) => v === null ? i : null).filter(i => i !== null);
+
+            if (checkWin(newBoard, 'X')) return { score: -10 };
+            if (checkWin(newBoard, 'O')) return { score: 10 };
+            if (availSpots.length === 0) return { score: 0 };
+
+            const moves = [];
+            for (let i = 0; i < availSpots.length; i++) {
+                const move = {};
+                move.index = availSpots[i];
+                newBoard[availSpots[i]] = player;
+
+                if (player === 'O') {
+                    const result = minimax(newBoard, 'X');
+                    move.score = result.score;
+                } else {
+                    const result = minimax(newBoard, 'O');
+                    move.score = result.score;
+                }
+
+                newBoard[availSpots[i]] = null;
+                moves.push(move);
+            }
+
+            let bestMove;
+            if (player === 'O') {
+                let bestScore = -Infinity;
+                for (let i = 0; i < moves.length; i++) {
+                    if (moves[i].score > bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < moves.length; i++) {
+                    if (moves[i].score < bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            }
+
+            return moves[bestMove];
+        }
+
+        function checkWin(board, player) {
+            const winCombinations = [
+                [0,1,2], [3,4,5], [6,7,8],
+                [0,3,6], [1,4,7], [2,5,8],
+                [0,4,8], [2,4,6]
+            ];
+            return winCombinations.some(combo =>
+                combo.every(i => board[i] === player)
+            );
+        }
+
+        startGame('friend');
+    </script>
+</body>
+</html>

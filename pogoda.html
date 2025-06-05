@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake - ciapciap</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background-color: #111;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ff69b4;
+            margin-top: 20px;
+        }
+        canvas {
+            background-color: #222;
+            margin-top: 20px;
+        }
+        .kontrolki {
+            margin-top: 20px;
+        }
+        .kontrolki button {
+            font-size: 2em;
+            margin: 5px;
+            padding: 15px 25px;
+            background-color: #ff69b4;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐍 Snake – <span style="color: #ff69b4;">ciapciap</span></h1>
+    <canvas id="game" width="400" height="400"></canvas>
+
+    <div class="kontrolki">
+        <div>
+            <button onclick="zmienKierunek('gora')">⬆️</button>
+        </div>
+        <div>
+            <button onclick="zmienKierunek('lewo')">⬅️</button>
+            <button onclick="zmienKierunek('dol')">⬇️</button>
+            <button onclick="zmienKierunek('prawo')">➡️</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+
+        const gridSize = 20;
+        let snake, dx, dy, apple, score;
+
+        function resetGame() {
+            snake = [{ x: 200, y: 200 }];
+            dx = gridSize;
+            dy = 0;
+            apple = getRandomPosition();
+            score = 0;
+        }
+
+        function getRandomPosition() {
+            return {
+                x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
+                y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize
+            };
+        }
+
+        function drawSnake() {
+            snake.forEach((segment, index) => {
+                ctx.fillStyle = index === 0 ? '#ff69b4' : '#fff';
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+                if (index === 0) {
+                    ctx.fillStyle = '#000';
+                    ctx.font = "10px Arial";
+                    ctx.fillText("ciapciap", segment.x + 1, segment.y + 13);
+                }
+            });
+        }
+
+        function drawApple() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(apple.x, apple.y, gridSize, gridSize);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            if (head.x === apple.x && head.y === apple.y) {
+                apple = getRandomPosition();
+                score++;
+            } else {
+                snake.pop();
+            }
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+
+            if (
+                head.x < 0 || head.y < 0 ||
+                head.x >= canvas.width || head.y >= canvas.height
+            ) return true;
+
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawApple();
+            moveSnake();
+            drawSnake();
+
+            if (checkCollision()) {
+                alert("Game Over! Wynik: " + score + "\nOdradzasz się!");
+                resetGame();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (dy === 0) { dx = 0; dy = -gridSize; }
+                    break;
+                case 'ArrowDown':
+                    if (dy === 0) { dx = 0; dy = gridSize; }
+                    break;
+                case 'ArrowLeft':
+                    if (dx === 0) { dx = -gridSize; dy = 0; }
+                    break;
+                case 'ArrowRight':
+                    if (dx === 0) { dx = gridSize; dy = 0; }
+                    break;
+            }
+        });
+
+        function zmienKierunek(kierunek) {
+            switch (kierunek) {
+                case 'gora':
+                    if (dy === 0) { dx = 0; dy = -gridSize; }
+                    break;
+                case 'dol':
+                    if (dy === 0) { dx = 0; dy = gridSize; }
+                    break;
+                case 'lewo':
+                    if (dx === 0) { dx = -gridSize; dy = 0; }
+                    break;
+                case 'prawo':
+                    if (dx === 0) { dx = gridSize; dy = 0; }
+                    break;
+            }
+        }
+
+        resetGame();
+        setInterval(gameLoop, 200); // tempo gry
+    </script>
+</body>
+</html>
